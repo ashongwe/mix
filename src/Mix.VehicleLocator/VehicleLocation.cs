@@ -1,7 +1,7 @@
 ﻿using System.Text;
 namespace Mix.VehicleLocator
 {
-    internal class VehicleLocation
+    internal class VehicleLocation: IComparable
     {
         internal int VehicleId { get; private set; }
         internal string VehicleRegistration { get; private set; }
@@ -37,7 +37,7 @@ namespace Mix.VehicleLocator
             Interlocked.Add(ref offset, 8);
             return new VehicleLocation(vehicleId, registrationNumber, latitude, longitude, recordedTimeUtc);
         }
-        internal double DistanceTo(double latitude, double longitude)
+        internal int DistanceTo(double latitude, double longitude)
         {
 
             if (double.IsNaN(Latitude) || double.IsNaN(Longitude) || double.IsNaN(latitude) || double.IsNaN(longitude))
@@ -49,12 +49,20 @@ namespace Mix.VehicleLocator
             double num3 = latitude * (Math.PI / 180.0);
             double num4 = longitude * (Math.PI / 180.0) - num2;
             double num5 = Math.Pow(Math.Sin((num3 - num) / 2.0), 2.0) + Math.Cos(num) * Math.Cos(num3) * Math.Pow(Math.Sin(num4 / 2.0), 2.0);
-            return 6376500.0 * (2.0 * Math.Atan2(Math.Sqrt(num5), Math.Sqrt(1.0 - num5)));
+            return (int)( 6376500.0 * (2.0 * Math.Atan2(Math.Sqrt(num5), Math.Sqrt(1.0 - num5))));
         }
         internal string Summary()
         {
             return $"Vehicle ID: {VehicleId} Registration: {VehicleRegistration} " +
                 $"Latitude: {Latitude} Longitude: {Longitude} Recorded Time: {RecordTimeUtc}";
+        }
+
+        public int CompareTo(object? obj)
+        {
+            if (obj == null) return int.MaxValue;
+            VehicleLocation? coordinate = obj as VehicleLocation;
+            if (coordinate == null) return int.MaxValue;
+            return DistanceTo(coordinate.Latitude, coordinate.Longitude);
         }
     }
 }
